@@ -1,4 +1,3 @@
-const airtable = require("airtable")
 const express = require("express")
 const app = express()
 
@@ -13,5 +12,7 @@ app.get("/ping", (_, res) => res.sendStatus(200))
 
 // Post new snaps to server
 app.post("/snap", (req, res) => {
+
+
 
 })
