@@ -269,7 +269,6 @@ function sendVerification(email, id, key) {
     <p>Hello,</p>
     <p>Thanks for snapping on my blog! Please click the following link to finalize your clap.</p>\
     <p><strong><a href="${verifyURL}">Click Here</a></strong></p>\
-    <br />
     <p>If the above link did not work, please directly visit the URL below:</p>\
     <p>${verifyURL}</p>`
   };
