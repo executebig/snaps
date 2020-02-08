@@ -17,6 +17,7 @@ POST /snap/
 
 ## Development
 
+1. Make sure [MongoDB](https://www.mongodb.com/download-center/community) is installed.
 1. Create a directory for the development database: `mkdir db`
 1. Set up environment variables in `.env` (* - not required if running on Heroku)
     * `PORT`*: Port number to run it on; not required if running on Heroku
