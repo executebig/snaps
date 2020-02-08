@@ -4,6 +4,7 @@ const mongodb = require("mongodb");
 const ObjectId = require("mongodb").ObjectID;
 const crypto = require("crypto");
 const Mailgun = require("mailgun-js");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
 app.use(bodyParser.json());
@@ -61,7 +62,7 @@ mongodb.MongoClient.connect(
 // Generic error handler used by all endpoints.
 function handleError(res, reason, message, code) {
   console.log("ERROR: " + reason);
-  res.status(code || 500).json({ error: message });
+  res.status(code || 500).json({ status: code || 500, message: message });
 }
 
 /* 1. Static Routes */
@@ -74,17 +75,27 @@ app.get("/", (_, res) => res.redirect("https://github.com/executebig/snaps"));
 /*  "/ping"
  *    GET: check status
  */
-app.get("/ping", (_, res) =>
-  res.sendStatus(200)
-);
+app.get("/ping", (_, res) => res.sendStatus(200));
 
 /* 2. Operation Routes */
+
+/**
+ * Limit the amount of requests per 5 minutes due to email sending
+ */
+const mailLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 5,
+  message: {
+    status: 429,
+    message: "Too many requests from this IP. Please try again in 5 minutes."
+  }
+});
 
 /*  "/snap"
  *    POST: create a new queued snap
  *      PARAMS: url, snaps, email (required)
  */
-app.post("/snap", (req, res) => {
+app.post("/snap", mailLimiter, (req, res) => {
   var newSnap = req.body;
 
   var date = new Date();
