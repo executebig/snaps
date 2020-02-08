@@ -25,6 +25,7 @@ const mailgun = new Mailgun({
 // Static Constants
 const QUEUE_COLLECTION = "queue";
 const SNAPS_COLLECTION = "snaps";
+const USERS_COLLECTION = "users";
 
 /* 0. System Setup */
 
@@ -106,7 +107,11 @@ app.post("/snap", (req, res) => {
 
 		db.collection(QUEUE_COLLECTION).insertOne(newSnap, (err, doc) => {
 			if (err) {
-				return handleError(res, err.message, "Failed to queue new snap.");
+				return handleError(
+					res,
+					err.message,
+					"Failed to queue new snap."
+				);
 			} else {
 				res.status(201).json(doc.ops[0]);
 				sendVerification(
@@ -124,15 +129,15 @@ app.post("/snap", (req, res) => {
  */
 
 app.get("/verify", (req, res) => {
-	var object;
+	var id;
 	try {
-		object = new ObjectId(req.query.id);
+		id = new ObjectId(req.query.id);
 	} catch (err) {
-        return handleError(res, "Invalid Input", "Queue ID is invalid.", 400);
+		return handleError(res, "Invalid Input", "Queue ID is invalid.", 400);
 	}
 
 	db.collection(QUEUE_COLLECTION)
-		.find({ _id: object })
+		.find({ _id: id })
 		.toArray(function(err, docs) {
 			if (err) {
 				res.status(400).send(err);
@@ -141,28 +146,65 @@ app.get("/verify", (req, res) => {
 					return handleError(
 						res,
 						"Invalid Input",
-						"Queue ID is invalid.",
+						"Queue ID is invalid. Possibly already verified.",
 						400
 					);
 				} else {
-                    if (docs[0]["verificationKey"] == req.query.key) {
-                        // success, proceed to migration
-                        res.status(200).json(docs[0]);
-                    } else {
-                        // failure, display failure page
-                        return handleError(
-                            res,
-                            "Invalid Input",
-                            "Verification key is invalid.",
-                            400
-                        );
-                    }
-                }
+					if (docs[0]["verificationKey"] == req.query.key) {
+						// success, proceed to migration
+						dequeue(res, docs[0]);
+					} else {
+						// failure, display failure page
+						return handleError(
+							res,
+							"Invalid Input",
+							"Verification key is invalid.",
+							400
+						);
+					}
+				}
 			}
-        });
+		});
 });
 
 /* 3. Services */
+
+function dequeue(res, data) {
+
+    // Register snaps
+	db.collection(SNAPS_COLLECTION).updateOne(
+		{
+			url: data.url
+		},
+		{
+			$inc: {
+				snaps: data.snaps
+			}
+		},
+		{ upsert: true }
+    );
+
+    // Register a user snapping history
+    db.collection(USERS_COLLECTION).updateOne(
+        {
+            email: data.email
+        },
+        {
+            $push: {
+                history: {
+                    url: data.url,
+                    snaps: data.snaps
+                }
+            }
+        },
+        { upsert: true }
+    )
+    
+    // Remove current entry from queue to prevent duplicated dequeue
+    db.collection(QUEUE_COLLECTION).remove({ _id: data["_id"] });
+
+    res.send(200);
+}
 
 function sendVerification(email, id, key) {
 	var verifyURL =
