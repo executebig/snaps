@@ -4,6 +4,12 @@ Medium's clapping as a full-stack service, written for [_When Pigs Fly_](https:/
 
 <img src="assets/img/executebig-logo.png" width="130" alt="Execute Pig" align="right">
 
+## Features
+1. Easy setup: simply setup a MongoDB connection, a Mailgun account, and a Node.js instance, and you're ready to roll.
+1. Email verification: Snaps are authenticated via emails, thus less spamming opportunities (is that a good thing?).
+1. Rate limited: Email sending is rate limited and easily configurable, so you won't run out of Mailgun credits too fast.
+1. No Data Racing: MongoDB comes with a number of measures including locking and other concurrency control to ensure no data racing happens.
+
 ## Development
 
 1. Make sure [MongoDB](https://www.mongodb.com/download-center/community) is installed.
