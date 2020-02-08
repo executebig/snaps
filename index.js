@@ -267,7 +267,7 @@ function sendVerification(email, id, key) {
     subject: "Verify Your Snaps!",
     html: `\
     <p>Hello,</p>
-    <p>Thanks for snapping on my blog! Please click the following link to finalize your clap.</p>\
+    <p>Thanks for snapping on my blog! Please click the following link to finalize your snap.</p>\
     <p><strong><a href="${verifyURL}">Click Here</a></strong></p>\
     <p>If the above link did not work, please directly visit the URL below:</p>\
     <p>${verifyURL}</p>`
