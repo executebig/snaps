@@ -175,7 +175,7 @@ app.get("/verify", (req, res) => {
 
   db.collection(QUEUE_COLLECTION)
     .find({ _id: id })
-    .toArray(function(err, docs) {
+    .toArray((err, docs) => {
       if (err) {
         return handleError(res, "Database Error", err.message, 400);
       } else {
@@ -273,7 +273,7 @@ function sendVerification(email, id, key) {
     <p>${verifyURL}</p>`
   };
 
-  mailgun.messages().send(emailData, function(err, body) {
+  mailgun.messages().send(emailData, (err, body) => {
     //If there is an error, render the error page
     if (err) {
       console.log("Error sending verification: " + err);
